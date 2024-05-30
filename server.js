@@ -71,7 +71,7 @@ app.post('/api/mail', (req, res) => {
 
 // Route pour la page de contact (doit être placée après les autres routes)
 app.get('/api/mail', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html')); // Assurez-vous que ce chemin est correct
+  res.sendFile(path.join(__dirname, '../src/views/ContactView.vue')); // Assurez-vous que ce chemin est correct
 });
 
 app.listen(port, () => {
