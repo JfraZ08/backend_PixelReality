@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const port = 3000;  // Vous pouvez changer ce port si nécessaire
@@ -10,6 +11,14 @@ const port = 3000;  // Vous pouvez changer ce port si nécessaire
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(express.json());
+
+const corpsOptions = {
+  origin: 'http://localhost:5173',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-type', 'Authorization']
+};
+
+app.use(cors(corpsOptions));
 
 // Configurer la connexion à la base de données
 const db = mysql.createConnection({
@@ -44,16 +53,18 @@ app.get('/api/drones', (req, res) => {
 app.post('/api/mail', (req, res) => {
   console.log(req.body);
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'testpixelreality@gmail.com',
-      pass: 'Pixel38+'
-    }
+    host: '89.234.180.61',
+    port: '25',
+    secure: false, 
+    // auth: {
+    //   user: 'contact@jeremyfrazier.fr',
+    //   pass: 'JfraZ*111100*'
+    // }
   });
 
   const mailOptions = {
     from: req.body.email,
-    to: 'testpixelreality@gmail.com',
+    to: 'contact@jeremyfrazier.fr',
     subject: `Message from ${req.body.email}: ${req.body.subject}`,
     text: req.body.message
   };
@@ -71,7 +82,7 @@ app.post('/api/mail', (req, res) => {
 
 // Route pour la page de contact (doit être placée après les autres routes)
 app.get('/api/mail', (req, res) => {
-  res.sendFile(path.join(__dirname, '../src/views/ContactView.vue')); // Assurez-vous que ce chemin est correct
+  res.sendFile(path.join(__dirname, '../src/views/ContactView.vue')); 
 });
 
 app.listen(port, () => {
