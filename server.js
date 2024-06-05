@@ -49,22 +49,53 @@ app.get('/api/drones', (req, res) => {
   });
 });
 
+app.post('/api/drones', (req, res) => {
+  console.log(req.body)
+  const { nom, description } = req.body ;
+  let sql = 'INSERT INTO pixelreality.drone (nOM,description) VALUES (?,?)';
+  db.query(sql, [nom, description], (err, result) => {
+    if(err)
+      {
+        console.log('Erreur lors de l\'insertion du drone dans la base de donées: ', err);
+        res.status(500).send('Erreur lors de l\insertion du drone');
+      }
+      else 
+      {
+        res.status(201).send({ id_drone:result.insertId, nom, description});
+      }
+  })
+});
+
+app.delete('/api/drones/:id', (req, res) => {
+  const droneId = req.params.id;
+  let sql= 'DELETE FROM pixelreality.drone WHERE id_drone = ?';
+
+  db.query(sql, [droneId], (err, result) => {
+    if (err) {
+      console.log('Erreur lors de la suppression du drone :', err);
+      res.status(500).send('Erreur lors de la suppression du drone');
+    } else {
+      res.status(200).send({message: 'Drone supprimé avec succès'})
+    }  
+  })
+})
+
 // Route pour envoyer un email
 app.post('/api/mail', (req, res) => {
   console.log(req.body);
   const transporter = nodemailer.createTransport({
-    host: '89.234.180.61',
-    port: '25',
-    secure: false, 
-    // auth: {
-    //   user: 'contact@jeremyfrazier.fr',
-    //   pass: 'JfraZ*111100*'
-    // }
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'testpixelreality@gmail.com',
+      pass: 'TestPixel38+'
+    }
   });
 
   const mailOptions = {
     from: req.body.email,
-    to: 'contact@jeremyfrazier.fr',
+    to: 'testpixelreality@gmail.com',
     subject: `Message from ${req.body.email}: ${req.body.subject}`,
     text: req.body.message
   };
@@ -88,3 +119,5 @@ app.get('/api/mail', (req, res) => {
 app.listen(port, () => {
   console.log(`Serveur backend démarré sur http://localhost:${port}`);
 });
+
+// créer un fichier pour récupérer le mail
