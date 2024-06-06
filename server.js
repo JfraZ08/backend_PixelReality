@@ -18,6 +18,10 @@ const corpsOptions = {
   allowedHeaders: ['Content-type', 'Authorization']
 };
 
+const ViewDrone = 'SELECT * FROM pixelreality.drone';
+const PostDrone = 'INSERT INTO pixelreality.drone (nOM,description) VALUES (?,?)';
+const DeleteDrone = 'DELETE FROM pixelreality.drone WHERE id_drone = ?';
+const UpdateDrone = 'UPDATE pixelreality.drone SET nom = ?, description = ? WHERE id_drone = ?  '
 app.use(cors(corpsOptions));
 
 // Configurer la connexion à la base de données
@@ -38,7 +42,7 @@ db.connect((err) => {
 
 // Exemple de route pour obtenir les drones
 app.get('/api/drones', (req, res) => {
-  let sql = 'SELECT * FROM pixelreality.drone';
+  let sql = ViewDrone;
   console.log(sql);
   db.query(sql, (err, results) => {
     if (err) {
@@ -52,7 +56,7 @@ app.get('/api/drones', (req, res) => {
 app.post('/api/drones', (req, res) => {
   console.log(req.body)
   const { nom, description } = req.body ;
-  let sql = 'INSERT INTO pixelreality.drone (nOM,description) VALUES (?,?)';
+  let sql = PostDrone;
   db.query(sql, [nom, description], (err, result) => {
     if(err)
       {
@@ -68,7 +72,7 @@ app.post('/api/drones', (req, res) => {
 
 app.delete('/api/drones/:id', (req, res) => {
   const droneId = req.params.id;
-  let sql= 'DELETE FROM pixelreality.drone WHERE id_drone = ?';
+  let sql= DeleteDrone;
 
   db.query(sql, [droneId], (err, result) => {
     if (err) {
@@ -77,6 +81,21 @@ app.delete('/api/drones/:id', (req, res) => {
     } else {
       res.status(200).send({message: 'Drone supprimé avec succès'})
     }  
+  })
+})
+
+app.put('/api/drones/:id', (req, res) => {
+  const { id_drone } = req.params;
+  const { nom, description } = req.body
+  let sql = UpdateDrone;
+  db.query(sql, [nom, description, id_drone], (err, result) => {
+    if (err) {
+      console.log('Errer lors de la mise à jour du drone :', err)
+      res.status(500).send('Erreir lors de la mise à jour du drone')
+    }
+    else {
+      res.status(200).send({ message : 'Drone mis à jour avec succès'})
+    }
   })
 })
 
