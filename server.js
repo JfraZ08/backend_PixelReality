@@ -1,35 +1,39 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+dotenv.config();
+// const bodyParser = require('body-parser');
 const mysql = require('mysql2');
-const nodemailer = require('nodemailer');
-const path = require('path');
 const cors = require('cors');
-
 const app = express();
 const port = 3000;  // Vous pouvez changer ce port si nécessaire
+// const jwt = require('jsonwebtoken');
+// const bcrypt = require('bcrypt');
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(express.json());
+app.use(cors());
 
-const corpsOptions = {
-  origin: 'http://localhost:5173',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: ['Content-type', 'Authorization']
-};
+app.use((req, response, next) => {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+response.setHeader("Access-Control-Allow-Credentials", "true");
+response.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+response.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+  next();
+})
 
-const ViewDrone = 'SELECT * FROM pixelreality.drone';
-const PostDrone = 'INSERT INTO pixelreality.drone (nOM,description) VALUES (?,?)';
-const DeleteDrone = 'DELETE FROM pixelreality.drone WHERE id_drone = ?';
-const UpdateDrone = 'UPDATE pixelreality.drone SET nom = ?, description = ? WHERE id_drone = ?  '
-app.use(cors(corpsOptions));
 
-// Configurer la connexion à la base de données
+
+
+
+
+
+
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '1234',
-  database: 'pixelreality'
+  host: process.env.DB_HOST_DEV,
+  user: process.env.DB_USER_DEV,
+  password: process.env.DB_PASSWORD_DEV,
+  database: process.env.DB_NAME_DEV
 });
 
 db.connect((err) => {
@@ -42,8 +46,7 @@ db.connect((err) => {
 
 // Exemple de route pour obtenir les drones
 app.get('/api/drones', (req, res) => {
-  let sql = ViewDrone;
-  console.log(sql);
+  let sql = ViewDroneDrone;
   db.query(sql, (err, results) => {
     if (err) {
       res.status(500).send('Erreur lors de la récupération des drones')
@@ -54,14 +57,12 @@ app.get('/api/drones', (req, res) => {
 });
 
 app.post('/api/drones', (req, res) => {
-  console.log(req.body)
   const { nom, description } = req.body ;
   let sql = PostDrone;
   db.query(sql, [nom, description], (err, result) => {
     if(err)
       {
-        console.log('Erreur lors de l\'insertion du drone dans la base de donées: ', err);
-        res.status(500).send('Erreur lors de l\insertion du drone');
+        res.status(500).send('Erreur lors de l\'insertion du drone');
       }
       else 
       {
@@ -99,44 +100,9 @@ app.put('/api/drones/:id', (req, res) => {
   })
 })
 
-// Route pour envoyer un email
-app.post('/api/mail', (req, res) => {
-  console.log(req.body);
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'testpixelreality@gmail.com',
-      pass: 'TestPixel38+'
-    }
-  });
-
-  const mailOptions = {
-    from: req.body.email,
-    to: 'testpixelreality@gmail.com',
-    subject: `Message from ${req.body.email}: ${req.body.subject}`,
-    text: req.body.message
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-      res.send('error');
-    } else {
-      console.log('Email sent: ' + info.response);
-      res.send('success');
-    }
-  });
-});
-
-// Route pour la page de contact (doit être placée après les autres routes)
-app.get('/api/mail', (req, res) => {
-  res.sendFile(path.join(__dirname, '../src/views/ContactView.vue')); 
-});
 
 app.listen(port, () => {
-  console.log(`Serveur backend démarré sur http://localhost:${port}`);
+  console.log(`Serveur backend démarré sur le port ${port}`);
 });
 
 // créer un fichier pour récupérer le mail
